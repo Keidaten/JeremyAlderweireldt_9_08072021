@@ -1,6 +1,10 @@
 import { screen } from '@testing-library/dom';
 import BillsUI from '../views/BillsUI.js';
 import { bills } from '../fixtures/bills.js';
+import userEvent from '@testing-library/user-event';
+import Bill from '../containers/Bills.js';
+import { ROUTES } from '../constants/routes';
+import { localStorageMock } from '../__mocks__/localStorage.js';
 
 describe('Given I am connected as an employee', () => {
 	describe('When I am on Bills Page', () => {
@@ -17,19 +21,47 @@ describe('Given I am connected as an employee', () => {
 			const datesSorted = [...dates].sort(antiChrono);
 			expect(dates).toEqual(datesSorted);
 		});
-		describe('Given content is a loading', () => {
-			test('Then a loading page should appear', () => {
-				const html = BillsUI({ loading: true });
+		describe('If I click on "new bill"', () => {
+			test('Then a new bill page should be open', () => {
+				const onNavigate = (pathname) => {
+					document.body.innerHTML = ROUTES({ pathname });
+				};
+				Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+				window.localStorage.setItem(
+					'user',
+					JSON.stringify({
+						type: 'Employee',
+					})
+				);
+				const newBill = new Bill({ document, onNavigate, firestore: null, localStorage: window.localStorage });
+				const html = BillsUI({ data: bills });
 				document.body.innerHTML = html;
-				expect(screen.getAllByText('Loading...')).toBeTruthy();
+
+				const handleClickNewBill = jest.fn(() => newBill.handleClickNewBill());
+
+				const newBillButton = screen.getByTestId('btn-new-bill');
+
+				newBillButton.addEventListener('click', handleClickNewBill);
+
+				userEvent.click(newBillButton);
+
+				expect(handleClickNewBill).toHaveBeenCalled();
+				expect(screen.getByText('Envoyer une note de frais')).toBeTruthy();
 			});
 		});
-		describe('Given an error appends', () => {
-			test('Then an error message should appear', () => {
-				const html = BillsUI({ error: true });
-				document.body.innerHTML = html;
-				expect(screen.getAllByText('Erreur')).toBeTruthy();
-			});
+	});
+	describe('Given content is loading', () => {
+		test('Then a loading page should appear', () => {
+			const html = BillsUI({ loading: true });
+			document.body.innerHTML = html;
+			expect(screen.getAllByText('Loading...')).toBeTruthy();
+		});
+	});
+	describe('Given an error appends', () => {
+		test('Then an error message should appear', () => {
+			const html = BillsUI({ error: true });
+			document.body.innerHTML = html;
+			expect(screen.getAllByText('Erreur')).toBeTruthy();
 		});
 	});
 });
