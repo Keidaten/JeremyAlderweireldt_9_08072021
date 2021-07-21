@@ -49,6 +49,49 @@ describe('Given I am connected as an employee', () => {
 				expect(screen.getByText('Envoyer une note de frais')).toBeTruthy();
 			});
 		});
+		describe('If I click on eye icon', () => {
+			test('Then a the modal file should appear', () => {
+				//Defini le localStorage
+				Object.defineProperty(window, 'localStorage', { value: localStorageMock });
+				window.localStorage.setItem(
+					'user',
+					JSON.stringify({
+						type: 'Employee',
+					})
+				);
+				//Template html
+				const html = BillsUI({ data: bills });
+				document.body.innerHTML = html;
+
+				// Navigation
+				const onNavigate = (pathname) => {
+					document.body.innerHTML = ROUTES({ pathname });
+				};
+
+				//Firestore = null
+				const firestore = null;
+
+				//Bill initialisation
+				const newBill = new Bill({
+					document,
+					onNavigate,
+					firestore,
+					bills,
+					localStorage: window.localStorage,
+				});
+
+				//Tests
+				$.fn.modal = jest.fn();
+				const eyes = screen.getAllByTestId('icon-eye');
+				eyes.forEach((eye) => {
+					const handleClickIconEye = jest.fn(() => newBill.handleClickIconEye(eye));
+					eye.addEventListener('click', handleClickIconEye);
+					userEvent.click(eye);
+					expect(handleClickIconEye).toHaveBeenCalled();
+				});
+				expect(screen.getByText('Justificatif')).toBeTruthy();
+			});
+		});
 	});
 	describe('Given content is loading', () => {
 		test('Then a loading page should appear', () => {
