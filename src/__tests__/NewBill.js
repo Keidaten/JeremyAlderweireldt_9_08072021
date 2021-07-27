@@ -38,9 +38,9 @@ describe('Given I am connected as an employee', () => {
 			//Tests
 			const handleChangeFile = jest.fn(() => newNewBill.handleChangeFile);
 			const file = screen.getByTestId('file');
-			file.addEventListener('input', handleChangeFile);
+			file.addEventListener('change', handleChangeFile);
 
-			fireEvent.input(file, {
+			fireEvent.change(file, {
 				target: {
 					files: [new File(['file.png'], 'file.png', { type: 'image/png' })],
 				},

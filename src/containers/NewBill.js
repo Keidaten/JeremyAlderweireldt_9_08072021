@@ -21,14 +21,16 @@ export default class NewBill {
 		const regexFormat = /(png|jpg|jpeg)/g;
 		const fileFormat = fileName.split('.').pop();
 		const validFormat = fileFormat.match(regexFormat);
-		this.firestore.storage
-			.ref(`justificatifs/${fileName}`)
-			.put(file)
-			.then((snapshot) => snapshot.ref.getDownloadURL())
-			.then((url) => {
-				this.fileUrl = url;
-				this.fileName = validFormat ? fileName : 'Invalid format';
-			});
+		if (this.firestore) {
+			this.firestore.storage
+				.ref(`justificatifs/${fileName}`)
+				.put(file)
+				.then((snapshot) => snapshot.ref.getDownloadURL())
+				.then((url) => {
+					this.fileUrl = url;
+					this.fileName = validFormat ? fileName : 'Invalid format';
+				});
+		}
 	};
 	handleSubmit = (e) => {
 		e.preventDefault();
